@@ -13,7 +13,7 @@ import logging
 
 white_list_ids = [1, 2]
 app = FastAPI()
-templates = Jinja2Templates(directory="templates")  # Directory containing HTML templates
+templates = Jinja2Templates(directory="templates")
 security = HTTPBasic()
 
 # Set up logging
@@ -112,7 +112,7 @@ async def update_config(
         request: Request,
         response_message: str = Form(...),
         sleep_duration: float = Form(...),
-        reply_enabled: Optional[str] = Form(None),
+        reply_enabled: Optional[bool] = Form(None),
         authenticated: bool = Depends(authenticate)
 ):
     try:
@@ -120,7 +120,8 @@ async def update_config(
         manager.sleep_duration = sleep_duration
 
         if reply_enabled is not None:
-            manager.reply_enabled = reply_enabled.lower() == "true"
+            manager.reply_enabled = reply_enabled
+            logger.info(f"Reply enabled: {manager.reply_enabled}")
         else:
             manager.reply_enabled = True
 
