@@ -6,7 +6,7 @@ import asyncio
 
 app = FastAPI()
 white_list_ids = [1, 2]
-host = "https://fastapi-production-53df.up.railway.app/"
+host = "https://fastapi-production-53df.up.railway.app"
 
 class ConnectionManager:
     def __init__(self, id_list):
@@ -48,9 +48,12 @@ class ConnectionManager:
 manager = ConnectionManager(id_list=white_list_ids)
 
 
-@app.websocket("/ws/{client_id}")
+@app.get("/")
 async def root():
     return {"greeting": "Hello, World!", "message": "Welcome to Strategy server!"}
+
+@app.websocket("/ws/{client_id}")
+
 async def websocket_endpoint(websocket: WebSocket, client_id: int):
     await manager.connect(websocket, client_id)
     try:
