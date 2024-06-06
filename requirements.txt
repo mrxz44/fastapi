@@ -3,3 +3,5 @@ hypercorn==0.14.4
 asyncio
 passlib
 jinja2
+bcrypt
+python-multipart
