@@ -47,12 +47,7 @@ class ConnectionManager:
 manager = ConnectionManager(id_list=white_list_ids)
 
 
-@app.get("/")
-async def root():
-    return {"greeting": "Hello, World!", "message": "Welcome to Strategy server!"}
-
 @app.websocket("/ws/{client_id}")
-
 async def websocket_endpoint(websocket: WebSocket, client_id: int):
     await manager.connect(websocket, client_id)
     try:
@@ -62,6 +57,10 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
             await manager.check_and_send_response()
     except WebSocketDisconnect:
         manager.disconnect(client_id)
+
+@app.get("/")
+async def root():
+    return {"greeting": "Hello, World!", "message": "Welcome to Strategy server!"}
 
 
 if __name__ == "__main__":
