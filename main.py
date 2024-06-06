@@ -111,13 +111,14 @@ async def update_config(
     request: Request,
     response_message: str = Form(...),
     sleep_duration: float = Form(...),
-    reply_enabled: str = Form(...),
+    reply_enabled: Optional[bool] = Form(...),
     authenticated: bool = Depends(authenticate)
 ):
     try:
         manager.response_message = json.loads(response_message)
         manager.sleep_duration = sleep_duration
-        manager.reply_enabled = (reply_enabled.lower() == "true")
+        if reply_enabled is not None:
+            manager.reply_enabled = reply_enabled
         return templates.TemplateResponse("admin.html", {
             "request": request,
             "response_message": json.dumps(manager.response_message),
