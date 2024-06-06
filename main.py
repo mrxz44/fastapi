@@ -46,6 +46,7 @@ class ConnectionManager:
         self.response_sent = {x: False for x in self.id_list}
         self.response_message: Dict[str, Optional[str]] = {"status": "signal", "ts": "ts_now", "order": "market_buy", "symbol": "XAUUSD", "volume": 0.01}
         self.sleep_duration: float = 1.0
+        self.reply_enabled: bool = True
 
     async def connect(self, websocket: WebSocket, client_id: int):
         await websocket.accept()
@@ -58,6 +59,8 @@ class ConnectionManager:
             del self.request_times[client_id]
 
     async def check_and_send_response(self):
+        if not self.reply_enabled:
+            return
         current_time = time.time()
         id_request_check = all(id in self.request_times for id in self.id_list)
         response_check = all(value == False for value in self.response_sent.values())
@@ -72,7 +75,7 @@ class ConnectionManager:
 
             self.response_sent = {x: True for x in self.id_list}
             self.last_response_time = current_time
-            await asyncio.sleep(1)  # Silent for 1000 milliseconds (1 second)
+            await asyncio.sleep(self.sleep_duration)  # Silent for 1000 milliseconds (1 second)
             self.response_sent = {x: False for x in self.id_list}
 
 
@@ -96,22 +99,30 @@ async def read_root(request: Request, authenticated: bool = Depends(authenticate
         return templates.TemplateResponse("admin.html", {
             "request": request,
             "response_message": json.dumps(manager.response_message),
-            "sleep_duration": manager.sleep_duration
+            "sleep_duration": manager.sleep_duration,
+            "reply_enabled": manager.reply_enabled
         })
     except Exception as e:
         logger.error(f"Error loading admin page: {e}")
         return {"error": "Internal Server Error", "message": str(e)}
 
-
 @app.post("/update_config")
-async def update_config(request: Request, response_message: str = Form(...), sleep_duration: float = Form(...), authenticated: bool = Depends(authenticate)):
+async def update_config(
+    request: Request,
+    response_message: str = Form(...),
+    sleep_duration: float = Form(...),
+    reply_enabled: bool = Form(...),
+    authenticated: bool = Depends(authenticate)
+):
     try:
         manager.response_message = json.loads(response_message)
         manager.sleep_duration = sleep_duration
+        manager.reply_enabled = reply_enabled
         return templates.TemplateResponse("admin.html", {
             "request": request,
             "response_message": json.dumps(manager.response_message),
             "sleep_duration": manager.sleep_duration,
+            "reply_enabled": manager.reply_enabled,
             "message": "Configuration updated successfully"
         })
     except Exception as e:
