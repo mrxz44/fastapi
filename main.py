@@ -106,21 +106,23 @@ async def read_root(request: Request, authenticated: bool = Depends(authenticate
         logger.error(f"Error loading admin page: {e}")
         return {"error": "Internal Server Error", "message": str(e)}
 
+
 @app.post("/update_config")
 async def update_config(
         request: Request,
         response_message: str = Form(...),
         sleep_duration: float = Form(...),
-        reply_enabled: Optional[bool] = Form(None),
+        reply_enabled: Optional[str] = Form(None),
         authenticated: bool = Depends(authenticate)
 ):
     try:
         manager.response_message = json.loads(response_message)
         manager.sleep_duration = sleep_duration
-        if reply_enabled is None:
-            manager.reply_enabled = True  # Enable replies by default if not provided in form data
+
+        if reply_enabled is not None:
+            manager.reply_enabled = reply_enabled.lower() == "true"
         else:
-            manager.reply_enabled = reply_enabled
+            manager.reply_enabled = True
 
         return templates.TemplateResponse("admin.html", {
             "request": request,
