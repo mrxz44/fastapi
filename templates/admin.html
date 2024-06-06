@@ -1,63 +1,58 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Page</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
         }
-        h1 {
-            color: #333;
+        .container {
+            width: 80%;
+            margin: 0 auto;
         }
-        form {
+        .config-form {
+            margin-bottom: 30px;
+        }
+        .logs {
             border: 1px solid #ccc;
-            padding: 20px;
-            border-radius: 5px;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: scroll;
         }
-        label {
-            display: block;
+        .form-field {
             margin-bottom: 10px;
-            font-weight: bold;
-        }
-        input[type="text"],
-        input[type="number"],
-        input[type="checkbox"] {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-        input[type="submit"] {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        input[type="submit"]:hover {
-            background-color: #45a049;
         }
     </style>
 </head>
 <body>
-    <h1>Admin Configuration</h1>
-    <form action="/update_config" method="post">
-        <label for="response_message">Response Message:</label>
-        <input type="text" id="response_message" name="response_message" value="{{ response_message }}"><br>
-        <label for="sleep_duration">Sleep Duration (seconds):</label>
-        <input type="number" id="sleep_duration" name="sleep_duration" value="{{ sleep_duration }}" step="0.1"><br>
-        <input type="checkbox" id="reply_enabled" name="reply_enabled" {% if reply_enabled %}checked{% endif %} value="true">
-        <label for="reply_enabled">Enable Replies</label><br>
-        <input type="submit" value="Update Configuration">
-    </form>
-    {% if message %}
-        <p>{{ message }}</p>
-    {% endif %}
+    <div class="container">
+        <h1>Admin Page</h1>
+        <div class="config-form">
+            <form method="post" action="/update_config">
+                <div class="form-field">
+                    <label for="response_message">Response Message:</label>
+                    <input type="text" id="response_message" name="response_message" value="{{ response_message }}">
+                </div>
+                <div class="form-field">
+                    <label for="sleep_duration">Sleep Duration (seconds):</label>
+                    <input type="number" step="0.1" id="sleep_duration" name="sleep_duration" value="{{ sleep_duration }}">
+                </div>
+                <div class="form-field">
+                    <label for="reply_enabled">Enable Replies:</label>
+                    <input type="checkbox" id="reply_enabled" name="reply_enabled" {% if reply_enabled %} checked {% endif %}>
+                </div>
+                <button type="submit">Update Config</button>
+            </form>
+        </div>
+        <h2>Logs</h2>
+        <div class="logs">
+            {% for log in logs %}
+                <p>{{ log }}</p>
+            {% endfor %}
+        </div>
+        {% if message %}
+            <p>{{ message }}</p>
+        {% endif %}
+    </div>
 </body>
 </html>

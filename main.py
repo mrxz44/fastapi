@@ -19,6 +19,11 @@ security = HTTPBasic()
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+file_handler = logging.FileHandler('server.log')
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
 
 # Create a password context with bcrypt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -96,11 +101,14 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
 @app.get("/")
 async def read_root(request: Request, authenticated: bool = Depends(authenticate)):
     try:
+        with open('server.log', 'r') as file:
+            logs = file.readlines()
         return templates.TemplateResponse("admin.html", {
             "request": request,
             "response_message": json.dumps(manager.response_message),
             "sleep_duration": manager.sleep_duration,
-            "reply_enabled": manager.reply_enabled
+            "reply_enabled": manager.reply_enabled,
+            "logs": logs
         })
     except Exception as e:
         logger.error(f"Error loading admin page: {e}")
@@ -142,6 +150,3 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
-""" uvicorn main:app --reload 
-    uvicorn main:app --host 0.0.0.0 --port 8000
-"""
