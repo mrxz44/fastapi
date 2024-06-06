@@ -5,9 +5,6 @@ import time
 import asyncio
 
 app = FastAPI()
-async def root():
-    return {"greeting": "Hello, World!", "message": "Welcome to Strategy server!"}
-
 white_list_ids = [1, 2]
 host = "https://fastapi-production-53df.up.railway.app/"
 
@@ -52,6 +49,8 @@ manager = ConnectionManager(id_list=white_list_ids)
 
 
 @app.websocket("/ws/{client_id}")
+async def root():
+    return {"greeting": "Hello, World!", "message": "Welcome to Strategy server!"}
 async def websocket_endpoint(websocket: WebSocket, client_id: int):
     await manager.connect(websocket, client_id)
     try:
