@@ -111,14 +111,16 @@ async def update_config(
     request: Request,
     response_message: str = Form(...),
     sleep_duration: float = Form(...),
-    reply_enabled: Optional[bool] = Form(...),
+    reply_enabled: Optional[bool] = Form(None),  # Set default value to None
     authenticated: bool = Depends(authenticate)
 ):
     try:
         manager.response_message = json.loads(response_message)
         manager.sleep_duration = sleep_duration
-        if reply_enabled is not None:
+        if reply_enabled is not None:  # Check if the field is provided in the form data
             manager.reply_enabled = reply_enabled
+        else:
+            manager.reply_enabled = True  # If not provided, enable replies by default
         return templates.TemplateResponse("admin.html", {
             "request": request,
             "response_message": json.dumps(manager.response_message),
@@ -129,7 +131,6 @@ async def update_config(
     except Exception as e:
         logger.error(f"Error updating config: {e}")
         return {"error": "Internal Server Error", "message": str(e)}
-
 
 
 
