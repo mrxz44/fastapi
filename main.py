@@ -1,10 +1,14 @@
 from datetime import datetime
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, Form
 from typing import List, Dict
 import time
 import asyncio
+from fastapi.templating import Jinja2Templates
+
 
 app = FastAPI()
+templates = Jinja2Templates(directory="templates")  # Directory containing HTML templates
+
 white_list_ids = [1, 2]
 
 class ConnectionManager:
@@ -59,12 +63,12 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
         manager.disconnect(client_id)
 
 @app.get("/")
-async def root():
-    return {"message": "Welcome to Strategy server!"}
+async def read_root(request: Request):
+    return templates.TemplateResponse("admin.html", {"request": request})
 
 @app.get("/ws")
 async def root():
-    return {"message": "Access only for validated IDs!"}
+    return {"message": "Access for validated IDs only!"}
 
 
 if __name__ == "__main__":
