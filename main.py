@@ -6,7 +6,6 @@ import asyncio
 
 app = FastAPI()
 white_list_ids = [1, 2]
-host = "https://fastapi-production-53df.up.railway.app"
 
 class ConnectionManager:
     def __init__(self, id_list):
@@ -67,7 +66,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host=host, port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
 """ uvicorn main:app --reload 
     uvicorn main:app --host 0.0.0.0 --port 8000
