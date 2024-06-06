@@ -9,7 +9,7 @@ async def root():
     return {"greeting": "Hello, World!", "message": "Welcome to Strategy server!"}
 
 white_list_ids = [1, 2]
-host = "https://fastapi-production-fb6b.up.railway.app/"
+host = "https://fastapi-production-53df.up.railway.app/"
 
 class ConnectionManager:
     def __init__(self, id_list):
