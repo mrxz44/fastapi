@@ -1,15 +1,35 @@
 from datetime import datetime
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, Form
-from typing import List, Dict
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, Depends, HTTPException, status
+from fastapi.templating import Jinja2Templates
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from passlib.context import CryptContext
+from typing import Dict
 import time
 import asyncio
-from fastapi.templating import Jinja2Templates
+import ssl
 
-
-app = FastAPI()
-templates = Jinja2Templates(directory="templates")  # Directory containing HTML templates
 
 white_list_ids = [1, 2]
+app = FastAPI()
+templates = Jinja2Templates(directory="templates")  # Directory containing HTML templates
+security = HTTPBasic()
+
+# Create a password context with bcrypt
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Set admin credentials
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD_HASH = pwd_context.hash("password")  # Hash your admin password here
+
+def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
+    if credentials.username == ADMIN_USERNAME and pwd_context.verify(credentials.password, ADMIN_PASSWORD_HASH):
+        return True
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
 
 class ConnectionManager:
     def __init__(self, id_list):
@@ -63,8 +83,9 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
         manager.disconnect(client_id)
 
 @app.get("/")
-async def read_root(request: Request):
+async def read_root(request: Request, authenticated: bool = Depends(authenticate)):
     return templates.TemplateResponse("admin.html", {"request": request})
+
 
 @app.get("/ws")
 async def root():
