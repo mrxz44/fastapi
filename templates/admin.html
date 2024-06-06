@@ -16,14 +16,42 @@
         h1 {
             text-align: center;
         }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        input, textarea {
+            padding: 8px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>WebSocket Server Admin</h1>
         <p>Welcome to the WebSocket Server Admin page!</p>
-        <p>This page allows you to manage the WebSocket server.</p>
-        <!-- Add your admin functionality here -->
+        <form action="/update_config" method="post">
+            <label for="response_message">Response Message (JSON format):</label>
+            <textarea id="response_message" name="response_message" rows="4" cols="50">{{ response_message }}</textarea>
+            <label for="sleep_duration">Sleep Duration (seconds):</label>
+            <input type="number" step="0.1" id="sleep_duration" name="sleep_duration" value="{{ sleep_duration }}">
+            <button type="submit">Update Configuration</button>
+        </form>
+        {% if message %}
+            <p>{{ message }}</p>
+        {% endif %}
     </div>
 </body>
 </html>

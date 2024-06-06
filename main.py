@@ -1,12 +1,13 @@
 from datetime import datetime
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, Depends, HTTPException, status
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, Depends, HTTPException, status, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from passlib.context import CryptContext
-from typing import Dict
+from typing import Dict, Optional
 import time
 import asyncio
 import ssl
+import json
 
 
 white_list_ids = [1, 2]
@@ -84,12 +85,14 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
 
 @app.get("/")
 async def read_root(request: Request, authenticated: bool = Depends(authenticate)):
-    return templates.TemplateResponse("admin.html", {"request": request})
+    return templates.TemplateResponse("admin.html", {"request": request, "response_message": manager.response_message, "sleep_duration": manager.sleep_duration})
 
+@app.post("/update_config")
+async def update_config(response_message: str = Form(...), sleep_duration: float = Form(...), authenticated: bool = Depends(authenticate)):
+    manager.response_message = json.loads(response_message)
+    manager.sleep_duration = sleep_duration
+    return templates.TemplateResponse("admin.html", {"request": Request, "response_message": manager.response_message, "sleep_duration": manager.sleep_duration, "message": "Configuration updated successfully"})
 
-@app.get("/ws")
-async def root():
-    return {"message": "Access for validated IDs only!"}
 
 
 if __name__ == "__main__":
