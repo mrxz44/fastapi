@@ -44,6 +44,8 @@ class ConnectionManager:
         self.request_times: Dict[int, float] = {}
         self.last_response_time: float = 0
         self.response_sent = {x: False for x in self.id_list}
+        self.response_message: Dict[str, Optional[str]] = {"status": "signal", "ts": "ts_now", "order": "market_buy", "symbol": "XAUUSD", "volume": 0.01}
+        self.sleep_duration: float = 1.0
 
     async def connect(self, websocket: WebSocket, client_id: int):
         await websocket.accept()
@@ -65,8 +67,8 @@ class ConnectionManager:
                 response_check
         ):
             ts_now = str(datetime.utcnow())
-            response = {"status": "signal", "ts": ts_now, "order": "market_buy", "symbol": "XAUUSD", "volume": 0.01}
-            [await conn.send_json(response) for conn in self.active_connections.values()]
+            self.response_message["ts"] = ts_now
+            [await conn.send_json(self.response_message) for conn in self.active_connections.values()]
 
             self.response_sent = {x: True for x in self.id_list}
             self.last_response_time = current_time
@@ -100,6 +102,7 @@ async def read_root(request: Request, authenticated: bool = Depends(authenticate
         logger.error(f"Error loading admin page: {e}")
         return {"error": "Internal Server Error", "message": str(e)}
 
+
 @app.post("/update_config")
 async def update_config(request: Request, response_message: str = Form(...), sleep_duration: float = Form(...), authenticated: bool = Depends(authenticate)):
     try:
@@ -114,6 +117,7 @@ async def update_config(request: Request, response_message: str = Form(...), sle
     except Exception as e:
         logger.error(f"Error updating config: {e}")
         return {"error": "Internal Server Error", "message": str(e)}
+
 
 
 
