@@ -60,7 +60,11 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
 
 @app.get("/")
 async def root():
-    return {"greeting": "Hello, World!", "message": "Welcome to Strategy server!"}
+    return {"message": "Welcome to Strategy server!"}
+
+@app.get("/ws")
+async def root():
+    return {"message": "Access only for validated IDs!"}
 
 
 if __name__ == "__main__":
