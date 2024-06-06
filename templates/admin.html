@@ -12,7 +12,8 @@
         <label for="sleep_duration">Sleep Duration (seconds):</label>
         <input type="number" id="sleep_duration" name="sleep_duration" value="{{ sleep_duration }}" step="0.1"><br><br>
         <label for="reply_enabled">Enable Replies:</label>
-        <input type="checkbox" id="reply_enabled" name="reply_enabled" {% if reply_enabled %}checked{% endif %}><br><br>
+        <input type="hidden" name="reply_enabled" value="false">
+        <input type="checkbox" id="reply_enabled" name="reply_enabled" value="true" {% if reply_enabled %}checked{% endif %}><br><br>
         <input type="submit" value="Update Configuration">
     </form>
     {% if message %}
