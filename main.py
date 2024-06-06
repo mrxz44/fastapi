@@ -119,9 +119,10 @@ async def update_config(
         manager.response_message = json.loads(response_message)
         manager.sleep_duration = sleep_duration
 
+        print(f"Reply enabled: {reply_enabled}")  # Print the value of reply_enabled
+
         if reply_enabled is not None:
             manager.reply_enabled = reply_enabled
-            logger.info(f"Reply enabled: {manager.reply_enabled}")
         else:
             manager.reply_enabled = True
 
