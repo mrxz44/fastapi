@@ -8,12 +8,17 @@ import time
 import asyncio
 import ssl
 import json
+import logging
 
 
 white_list_ids = [1, 2]
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")  # Directory containing HTML templates
 security = HTTPBasic()
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Create a password context with bcrypt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -85,22 +90,31 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
 
 @app.get("/")
 async def read_root(request: Request, authenticated: bool = Depends(authenticate)):
-    return templates.TemplateResponse("admin.html", {
-        "request": request,
-        "response_message": json.dumps(manager.response_message),
-        "sleep_duration": manager.sleep_duration
-    })
+    try:
+        return templates.TemplateResponse("admin.html", {
+            "request": request,
+            "response_message": json.dumps(manager.response_message),
+            "sleep_duration": manager.sleep_duration
+        })
+    except Exception as e:
+        logger.error(f"Error loading admin page: {e}")
+        return {"error": "Internal Server Error", "message": str(e)}
 
 @app.post("/update_config")
 async def update_config(request: Request, response_message: str = Form(...), sleep_duration: float = Form(...), authenticated: bool = Depends(authenticate)):
-    manager.response_message = json.loads(response_message)
-    manager.sleep_duration = sleep_duration
-    return templates.TemplateResponse("admin.html", {
-        "request": request,
-        "response_message": json.dumps(manager.response_message),
-        "sleep_duration": manager.sleep_duration,
-        "message": "Configuration updated successfully"
-    })
+    try:
+        manager.response_message = json.loads(response_message)
+        manager.sleep_duration = sleep_duration
+        return templates.TemplateResponse("admin.html", {
+            "request": request,
+            "response_message": json.dumps(manager.response_message),
+            "sleep_duration": manager.sleep_duration,
+            "message": "Configuration updated successfully"
+        })
+    except Exception as e:
+        logger.error(f"Error updating config: {e}")
+        return {"error": "Internal Server Error", "message": str(e)}
+
 
 
 if __name__ == "__main__":

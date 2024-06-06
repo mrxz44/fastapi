@@ -5,3 +5,4 @@ passlib
 jinja2
 bcrypt
 python-multipart
+logging
