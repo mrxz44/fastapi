@@ -89,6 +89,25 @@ class ConnectionManager:
 
 manager = ConnectionManager(id_list=white_list_ids)
 
+async def log_reader(websocket: WebSocket):
+    with open('server.log', 'r') as file:
+        file.seek(0, 2)  # Move the cursor to the end of the file
+        while True:
+            line = file.readline()
+            if not line:
+                await asyncio.sleep(0.1)
+                continue
+            await websocket.send_text(line.strip())
+
+@app.websocket("/ws/logs")
+async def websocket_logs(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        await log_reader(websocket)
+    except WebSocketDisconnect:
+        logger.info("Log WebSocket disconnected")
+    except Exception as e:
+        logger.error(f"Error in log WebSocket: {e}")
 
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: int):
@@ -106,14 +125,11 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
 @app.get("/")
 async def read_root(request: Request, authenticated: bool = Depends(authenticate)):
     try:
-        with open('server.log', 'r') as file:
-            logs = file.readlines()
         return templates.TemplateResponse("admin.html", {
             "request": request,
             "response_message": json.dumps(manager.response_message),
             "sleep_duration": manager.sleep_duration,
-            "reply_enabled": manager.reply_enabled,
-            "logs": logs
+            "reply_enabled": manager.reply_enabled
         })
     except Exception as e:
         logger.error(f"Error loading admin page: {e}")
