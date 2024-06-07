@@ -63,6 +63,24 @@
             background-color: #45a049;
         }
     </style>
+    <script>
+        let logsContainer;
+
+        function connectWebSocket() {
+            const ws = new WebSocket("wss://" + window.location.host + "/ws/logs");
+            ws.onmessage = function(event) {
+                const newLog = document.createElement("div");
+                newLog.textContent = event.data;
+                logsContainer.appendChild(newLog);
+                logsContainer.scrollTop = logsContainer.scrollHeight;
+            };
+        }
+
+        window.onload = function() {
+            logsContainer = document.getElementById("logs");
+            connectWebSocket();
+        };
+    </script>
 </head>
 <body>
     <div class="container">
@@ -77,4 +95,15 @@
                     <label for="sleep_duration">Sleep Duration (seconds):</label>
                     <input type="number" step="0.1" id="sleep_duration" name="sleep_duration" value="{{ sleep_duration }}">
                 </div>
-                <div class="
+                <div class="form-field">
+                    <label for="reply_enabled">Enable Reply:</label>
+                    <input type="checkbox" id="reply_enabled" name="reply_enabled" {% if reply_enabled %} checked {% endif %}>
+                </div>
+                <button type="submit">Update Config</button>
+            </form>
+        </div>
+        <h2>Logs</h2>
+        <div id="logs" class="logs"></div>
+    </div>
+</body>
+</html>
