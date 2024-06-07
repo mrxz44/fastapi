@@ -57,11 +57,13 @@ class ConnectionManager:
         await websocket.accept()
         self.active_connections[client_id] = websocket
         self.request_times[client_id] = time.time()
+        logger.info(f"Client {client_id} connected")
 
     def disconnect(self, client_id: int):
         if client_id in self.active_connections:
             del self.active_connections[client_id]
             del self.request_times[client_id]
+            logger.info(f"Client {client_id} disconnected")
 
     async def check_and_send_response(self):
         if not self.reply_enabled:
@@ -77,6 +79,7 @@ class ConnectionManager:
             ts_now = str(datetime.utcnow())
             self.response_message["ts"] = ts_now
             [await conn.send_json(self.response_message) for conn in self.active_connections.values()]
+            logger.info("Sent response: %s", self.response_message)
 
             self.response_sent = {x: True for x in self.id_list}
             self.last_response_time = current_time
@@ -97,6 +100,8 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
             await manager.check_and_send_response()
     except WebSocketDisconnect:
         manager.disconnect(client_id)
+    except Exception as e:
+        logger.error(f"Error in WebSocket connection with client {client_id}: {e}")
 
 @app.get("/")
 async def read_root(request: Request, authenticated: bool = Depends(authenticate)):
@@ -134,6 +139,9 @@ async def update_config(
         else:
             manager.reply_enabled = True
 
+        logger.info("Updated config: response_message=%s, sleep_duration=%s, reply_enabled=%s",
+                    manager.response_message, manager.sleep_duration, manager.reply_enabled)
+
         return templates.TemplateResponse("admin.html", {
             "request": request,
             "response_message": json.dumps(manager.response_message),
@@ -149,4 +157,3 @@ async def update_config(
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
